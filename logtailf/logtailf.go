@@ -9,7 +9,7 @@ import (
 )
 
 // 实现日志文件的监控功能
-func WatchLogFile(datapath string, ctx context.Context) {
+func WatchLogFile(pathkey string, datapath string, ctx context.Context, keychan chan<- string) {
 	fmt.Println("begin goroutine watch log file ", datapath)
 	tailFile, err := tail.TailFile(datapath, tail.Config{
 		// 文件被移除或被打包，需要重新打开
@@ -26,7 +26,19 @@ func WatchLogFile(datapath string, ctx context.Context) {
 		fmt.Println("tail file err:", err)
 		return
 	}
-
+	defer func() {
+		if errcover := recover(); errcover != nil {
+			fmt.Println("goroutine watch ", pathkey, " panic")
+			fmt.Println(errcover)
+			keychan <- pathkey
+		} else {
+			fmt.Println("recover failed")
+		}
+	}()
+	// 模拟制造panic
+	if pathkey == "logdir3" {
+		panic("test panic")
+	}
 	for true {
 		select {
 		case msg, ok := <-tailFile.Lines:
@@ -42,4 +54,6 @@ func WatchLogFile(datapath string, ctx context.Context) {
 			return
 		}
 	}
+	// 在协程奔溃时打印日志信息，并向keychan中写入字符串通知主协程处理
+
 }

@@ -29,9 +29,9 @@ func ReadConfig(v *viper.Viper) (interface{}, bool) {
 	fmt.Println("filename:", filename)
 	fmt.Println(path.Dir(filename))
 	// 如果不设置AddConfigPath去指定路径， 它会在程序执行的目录去寻找config.yaml
-    v.AddConfigPath(path.Dir(filename))
+	v.AddConfigPath(path.Dir(filename))
 	// 设置配置文件类型
-    v.SetConfigType("yaml")
+	v.SetConfigType("yaml")
 	if err := v.ReadInConfig(); err != nil {
 		fmt.Print("Read config file failed, err is :", err.Error())
 		return nil, false
@@ -56,7 +56,7 @@ func WatchConfig(ctx context.Context, v *viper.Viper, pathChan chan interface{})
 		})
 	}()
 
-	// 设置监听回调函数
+	// 设置监听回调函数,当配置文件变更时会调用这个函数
 	v.OnConfigChange(func(e fsnotify.Event) {
 		fmt.Printf("config is change: %s \n", e.String())
 		configPaths := v.Get("configpath")
